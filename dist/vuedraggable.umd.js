@@ -5022,6 +5022,14 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
       });
     },
     alterList: function alterList(onList) {
+      var _this6 = this;
+
+      var animation = this._sortable.options && this._sortable.options.animation;
+      animation ? setTimeout(function () {
+        return _this6._alterList(onList);
+      }, animation) : this._alterList(onList);
+    },
+    _alterList: function _alterList(onList) {
       if (this.list) {
         onList(this.list);
         return;
@@ -5108,11 +5116,11 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
       return this.componentStructure.getVmIndexFromDomIndex(domIndex, this.targetDomElement);
     },
     onDragStart: function onDragStart(evt) {
-      var _this6 = this;
+      var _this7 = this;
 
       if (Array.isArray(evt.items) && evt.items.length) {
         this.multidragContexts = evt.items.map(function (e) {
-          return _this6.getUnderlyingVm(e);
+          return _this7.getUnderlyingVm(e);
         });
         var elements = this.multidragContexts.sort(function (_ref5, _ref6) {
           var a = _ref5.index;
@@ -5205,7 +5213,7 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
       }
     },
     onDragRemoveMulti: function onDragRemoveMulti(evt) {
-      var _this7 = this;
+      var _this8 = this;
 
       // for match item index and element index
       var headerSize = (this.$slots.header ? this.$slots.header() : []).length || 0; // sort old indicies
@@ -5220,7 +5228,7 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
       items.forEach(function (_ref9) {
         var item = _ref9.multiDragElement,
             index = _ref9.index;
-        insertNodeAt(_this7.$el, item, index);
+        insertNodeAt(_this8.$el, item, index);
 
         if (item.parentNode) {
           external_commonjs_sortablejs_commonjs2_sortablejs_amd_sortablejs_root_Sortable_default.a.utils.deselect(item);
@@ -5238,7 +5246,7 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
       this.removeAllFromList(indiciesToRemove); // emit change
 
       var removed = indiciesToRemove.sort().map(function (oldIndex) {
-        var context = _this7.multidragContexts.find(function (e) {
+        var context = _this8.multidragContexts.find(function (e) {
           return e.index === oldIndex;
         });
 
@@ -5283,7 +5291,7 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
       }
     },
     onDragUpdateMulti: function onDragUpdateMulti(evt) {
-      var _this8 = this;
+      var _this9 = this;
 
       var items = evt.items,
           from = evt.from; // for match item index and element index
@@ -5314,7 +5322,7 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
       this.updatePositions(Array.from(oldIndicies), newIndex); // emit change
 
       var moved = oldIndicies.map(function (oldIndex, index) {
-        var context = _this8.multidragContexts.find(function (e) {
+        var context = _this9.multidragContexts.find(function (e) {
           return e.index === oldIndex;
         });
 
@@ -5331,21 +5339,12 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
     onDragUpdateSingle: function onDragUpdateSingle(evt) {
       var swapMode = this._sortable.options && this._sortable.options.swap;
       var swapItem = swapMode ? evt.from.children[evt.oldIndex] : null;
-      removeNode(evt.item);
-      insertNodeAt(evt.from, evt.item, evt.oldIndex);
-
-      if (swapMode) {
-        removeNode(swapItem);
-        insertNodeAt(evt.from, swapItem, evt.newIndex);
-      }
-
       var oldIndex = this.context.index;
-      var newIndex = this.getVmIndexFromDomIndex(evt.newIndex);
-      if (swapMode) this.swapPosition(oldIndex, newIndex);else this.updatePosition(oldIndex, newIndex);
+      if (swapMode) this.swapPosition(oldIndex, evt.newIndex);else this.updatePosition(oldIndex, evt.newIndex);
       var moved = {
         element: this.context.element,
         oldIndex: oldIndex,
-        newIndex: newIndex
+        newIndex: evt.newIndex
       };
       this.emitChanges({
         moved: moved
