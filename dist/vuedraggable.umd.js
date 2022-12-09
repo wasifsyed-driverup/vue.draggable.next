@@ -4578,9 +4578,8 @@ var es_array_find_index = __webpack_require__("c740");
 
 
 
-var getHtmlElementFromNode = function getHtmlElementFromNode(_ref) {
-  var el = _ref.el;
-  return el;
+var getHtmlElementFromNode = function getHtmlElementFromNode(node, index) {
+  return node.el || node.ctx.vnode.el.children[index];
 };
 
 var addContext = function addContext(domElement, context) {
@@ -4592,18 +4591,19 @@ var getContext = function getContext(domElement) {
 };
 
 var componentStructure_ComponentStructure = /*#__PURE__*/function () {
-  function ComponentStructure(_ref2) {
-    var _ref2$nodes = _ref2.nodes,
-        header = _ref2$nodes.header,
-        defaultNodes = _ref2$nodes.default,
-        footer = _ref2$nodes.footer,
-        root = _ref2.root,
-        realList = _ref2.realList;
+  function ComponentStructure(_ref) {
+    var _ref$nodes = _ref.nodes,
+        header = _ref$nodes.header,
+        defaultNodes = _ref$nodes.default,
+        footer = _ref$nodes.footer,
+        root = _ref.root,
+        realList = _ref.realList;
 
     _classCallCheck(this, ComponentStructure);
 
     this.defaultNodes = defaultNodes;
     this.children = [].concat(_toConsumableArray(header), _toConsumableArray(defaultNodes), _toConsumableArray(footer));
+    this.headerLength = header.length;
     this.externalComponent = root.externalComponent;
     this.rootTransition = root.transition;
     this.tag = root.tag;
@@ -4631,10 +4631,12 @@ var componentStructure_ComponentStructure = /*#__PURE__*/function () {
   }, {
     key: "updated",
     value: function updated() {
+      var _this = this;
+
       var defaultNodes = this.defaultNodes,
           realList = this.realList;
       defaultNodes.forEach(function (node, index) {
-        addContext(getHtmlElementFromNode(node), {
+        addContext(getHtmlElementFromNode(node, _this.headerLength + index), {
           element: realList[index],
           index: index
         });
