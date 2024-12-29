@@ -4,7 +4,7 @@ import { console } from "./util/console";
 import {
   getComponentAttributes,
   createSortableOption,
-  getValidSortableEntries
+  getValidSortableEntries,
 } from "./core/componentBuilderHelper";
 import { computeComponentStructure } from "./core/renderHelper";
 import { events } from "./core/sortableEvents";
@@ -64,42 +64,42 @@ const props = {
   list: {
     type: Array,
     required: false,
-    default: null
+    default: null,
   },
   modelValue: {
     type: Array,
     required: false,
-    default: null
+    default: null,
   },
   itemKey: {
     type: [String, Function],
-    required: true
+    required: true,
   },
   clone: {
     type: Function,
-    default: original => {
+    default: (original) => {
       return original;
-    }
+    },
   },
   tag: {
     type: String,
-    default: "div"
+    default: "div",
   },
   move: {
     type: Function,
-    default: null
+    default: null,
   },
   componentData: {
     type: Object,
     required: false,
-    default: null
-  }
+    default: null,
+  },
 };
 
 const emits = [
   "update:modelValue",
   "change",
-  ...[...events.manageAndEmit, ...events.emit].map(evt => evt.toLowerCase())
+  ...[...events.manageAndEmit, ...events.emit].map((evt) => evt.toLowerCase()),
 ];
 
 const draggableComponent = defineComponent({
@@ -113,7 +113,7 @@ const draggableComponent = defineComponent({
 
   data() {
     return {
-      error: false
+      error: false,
     };
   },
 
@@ -125,7 +125,7 @@ const draggableComponent = defineComponent({
         $slots,
         tag,
         realList,
-        getKey
+        getKey,
       });
       this.componentStructure = componentStructure;
       const attributes = getComponentAttributes({ $attrs, componentData });
@@ -155,10 +155,10 @@ const draggableComponent = defineComponent({
     const sortableOptions = createSortableOption({
       $attrs,
       callBackBuilder: {
-        manageAndEmit: event => manageAndEmit.call(this, event),
-        emit: event => emit.bind(this, event),
-        manage: event => manage.call(this, event)
-      }
+        manageAndEmit: (event) => manageAndEmit.call(this, event),
+        emit: (event) => emit.bind(this, event),
+        manage: (event) => manage.call(this, event),
+      },
     });
     const targetDomElement = $el.nodeType === 1 ? $el : $el.parentElement;
     this._sortable = createSortableInstance(targetDomElement, sortableOptions);
@@ -185,8 +185,8 @@ const draggableComponent = defineComponent({
       if (typeof itemKey === "function") {
         return itemKey;
       }
-      return element => element[itemKey];
-    }
+      return (element) => element[itemKey];
+    },
   },
 
   watch: {
@@ -198,8 +198,8 @@ const draggableComponent = defineComponent({
           _sortable.option(key, value);
         });
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
 
   methods: {
@@ -228,18 +228,18 @@ const draggableComponent = defineComponent({
 
     spliceList() {
       // @ts-ignore
-      const spliceList = list => list.splice(...arguments);
+      const spliceList = (list) => list.splice(...arguments);
       this.alterList(spliceList);
     },
 
     removeAllFromList(indicies) {
-      const spliceList = list =>
-        indicies.forEach(index => list.splice(index, 1));
+      const spliceList = (list) =>
+        indicies.forEach((index) => list.splice(index, 1));
       this.alterList(spliceList);
     },
 
     swapPosition(oldIndex, newIndex) {
-      const swapPosition = list => {
+      const swapPosition = (list) => {
         const temp = list[oldIndex];
         list[oldIndex] = list[newIndex];
         list[newIndex] = temp;
@@ -248,20 +248,20 @@ const draggableComponent = defineComponent({
     },
 
     updatePosition(oldIndex, newIndex) {
-      const updatePosition = list =>
+      const updatePosition = (list) =>
         list.splice(newIndex, 0, list.splice(oldIndex, 1)[0]);
       this.alterList(updatePosition);
     },
 
     updatePositions(oldIndicies, newIndex) {
       /** @type {<T = any>(list: T[]) => T[]} */
-      const updatePosition = list => {
+      const updatePosition = (list) => {
         // get selected items with correct order
         // sort -> reverse (for prevent Array.splice side effect) -> splice -> reverse
         const items = oldIndicies
           .sort()
           .reverse()
-          .flatMap(oldIndex => list.splice(oldIndex, 1))
+          .flatMap((oldIndex) => list.splice(oldIndex, 1))
           .reverse();
         return list.splice(newIndex, 0, ...items);
       };
@@ -291,10 +291,10 @@ const draggableComponent = defineComponent({
 
     onDragStart(evt) {
       if (Array.isArray(evt.items) && evt.items.length) {
-        this.multidragContexts = evt.items.map(e => this.getUnderlyingVm(e));
+        this.multidragContexts = evt.items.map((e) => this.getUnderlyingVm(e));
         const elements = this.multidragContexts
           .sort(({ index: a }, { index: b }) => a - b)
-          .map(e => e.element);
+          .map((e) => e.element);
         evt.item._underlying_vm_multidrag_ = this.clone(elements);
       }
       this.context = this.getUnderlyingVm(evt.item);
@@ -316,14 +316,14 @@ const draggableComponent = defineComponent({
         return;
       }
       // remove nodes
-      evt.items.forEach(e => removeNode(e));
+      evt.items.forEach((e) => removeNode(e));
       // insert elements
-      const newIndex = this.getVmIndexFromDomIndex(evt.newIndex);
+      const newIndex = this.getVmIndexFromDomIndex(evt.newIndicies[0].index);
       this.spliceList(newIndex, 0, ...elements);
       // emit change
       const added = elements.map((element, index) => ({
         element,
-        newIndex: newIndex + index
+        newIndex: newIndex + index,
       }));
       this.emitChanges({ added });
     },
@@ -350,7 +350,7 @@ const draggableComponent = defineComponent({
         item: swapItem,
         oldIndex: evt.newIndex,
         newIndex: evt.oldIndex,
-        swap: true
+        swap: true,
       };
       nextTick(() => {
         const context = swapEvt.to.__draggable_component__;
@@ -383,7 +383,7 @@ const draggableComponent = defineComponent({
       });
       // if clone
       if (evt.pullMode === "clone") {
-        evt.clones.forEach(element => {
+        evt.clones.forEach((element) => {
           removeNode(element);
         });
         return;
@@ -393,8 +393,10 @@ const draggableComponent = defineComponent({
       const indiciesToRemove = getIndiciesToRemove(items, headerSize);
       this.removeAllFromList(indiciesToRemove);
       // emit change
-      const removed = indiciesToRemove.sort().map(oldIndex => {
-        const context = this.multidragContexts.find(e => e.index === oldIndex);
+      const removed = indiciesToRemove.sort().map((oldIndex) => {
+        const context = this.multidragContexts.find(
+          (e) => e.index === oldIndex
+        );
         return { element: context.element, oldIndex };
       });
       this.emitChanges({ removed });
@@ -429,28 +431,30 @@ const draggableComponent = defineComponent({
       const headerSize =
         (this.$slots.header ? this.$slots.header() : []).length || 0;
       // remove nodes
-      items.forEach(item => removeNode(item));
+      items.forEach((item) => removeNode(item));
       // sort items
       // note: "order by oldIndex asc" for prevent Node.insertBefore side effect
       const itemsWithIndex = Array.from(evt.oldIndicies).sort(
         ({ index: a }, { index: b }) => a - b
       );
       // insert nodes
-      itemsWithIndex.forEach(e =>
+      itemsWithIndex.forEach((e) =>
         insertNodeAt(from, e.multiDragElement, e.index)
       );
       // move items
       const oldIndicies = itemsWithIndex.map(({ index }) => index - headerSize);
-      const newIndex = this.getVmIndexFromDomIndex(evt.newIndex);
+      const newIndex = this.getVmIndexFromDomIndex(evt.newIndicies[0].index);
       // note: Array.from = prevent sort change side effect
       this.updatePositions(Array.from(oldIndicies), newIndex);
       // emit change
       const moved = oldIndicies.map((oldIndex, index) => {
-        const context = this.multidragContexts.find(e => e.index === oldIndex);
+        const context = this.multidragContexts.find(
+          (e) => e.index === oldIndex
+        );
         return {
           element: context.element,
           oldIndex,
-          newIndex: newIndex + index
+          newIndex: newIndex + index,
         };
       });
       this.emitChanges({ moved });
@@ -478,12 +482,11 @@ const draggableComponent = defineComponent({
         return 0;
       }
       const domChildren = [...evt.to.children].filter(
-        el => el.style["display"] !== "none"
+        (el) => el.style["display"] !== "none"
       );
       const currentDomIndex = domChildren.indexOf(evt.related);
-      const currentIndex = relatedContext.component.getVmIndexFromDomIndex(
-        currentDomIndex
-      );
+      const currentIndex =
+        relatedContext.component.getVmIndexFromDomIndex(currentDomIndex);
       const draggedInList = domChildren.indexOf(draggingElement) !== -1;
       return draggedInList || !evt.willInsertAfter
         ? currentIndex
@@ -500,20 +503,20 @@ const draggableComponent = defineComponent({
       const futureIndex = this.computeFutureIndex(relatedContext, evt);
       const draggedContext = {
         ...this.context,
-        futureIndex
+        futureIndex,
       };
       const sendEvent = {
         ...evt,
         relatedContext,
-        draggedContext
+        draggedContext,
       };
       return move(sendEvent, originalEvent);
     },
 
     onDragEnd() {
       draggingElement = null;
-    }
-  }
+    },
+  },
 });
 
 export default draggableComponent;
